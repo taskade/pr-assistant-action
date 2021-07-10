@@ -13,4 +13,4 @@ jobs:
     steps:
       - uses: taskade/pr-assistant-action@main
         with:
-          min-approval-count: 2
+          min_approvals_count: 2
