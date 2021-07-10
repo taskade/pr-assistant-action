@@ -1,5 +1,6 @@
 import * as core from '@actions/core';
 import github from '@actions/github';
+import conventionalCommitsParser, { Commit } from 'conventional-commits-parser';
 
 async function verifyApprovals() {
   const minApprovalCountStr = core.getInput('min-approval-count');
@@ -44,9 +45,62 @@ async function verifyApprovals() {
   });
 }
 
+async function verifyPRTitle() {
+  const prTitle = github.context.payload.pull_request?.title;
+
+  const prNumber = github.context.payload.pull_request?.number;
+
+  if (prNumber == null) {
+    throw new Error(
+      'This action can only be triggered from events with pull_request in the payload'
+    );
+  }
+
+  const parser = conventionalCommitsParser();
+  const parsedTitle: Commit = await new Promise((resolve, reject) => {
+    parser.on('data', resolve);
+    parser.on('error', reject);
+    parser.pipe(prTitle);
+  });
+
+  const hasType = parsedTitle.type != null;
+  const hasReferences = parsedTitle.references.length > 0;
+
+  const { owner, repo } = github.context.repo;
+  const token = core.getInput('github_token');
+  const octokit = github.getOctokit(token);
+
+  let body = '';
+
+  if (hasType && hasReferences) {
+    body = 'Excellent PR title! 👍';
+  } else {
+    body = 'The title of this PR can be improved:\n\n';
+
+    if (!hasType) {
+      body += '- Type required (feat, fix, chore, etc.)\n';
+    }
+
+    if (!hasReferences) {
+      body += '- Reference to issue required (e.g. #99)\n';
+    }
+
+    body +=
+      '\n\n[Conventional Commits 1.0.0 Specification](https://www.conventionalcommits.org/en/v1.0.0/#summary)';
+  }
+
+  await octokit.rest.issues.createComment({
+    owner,
+    repo,
+    issue_number: prNumber,
+    body,
+  });
+}
+
 async function run() {
   switch (github.context.eventName) {
     case 'pull_request': {
+      await verifyPRTitle();
       break;
     }
     case 'pull_request_review': {
