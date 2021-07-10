@@ -6,6 +6,7 @@
   "dependencies": {
     "@actions/core": "^1.4.0",
     "@actions/github": "^5.0.0",
+    "@vercel/ncc": "^0.28.6",
     "conventional-commits-parser": "^3.2.1",
     "typescript": "^4.3.5"
   },
