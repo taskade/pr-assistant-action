@@ -1,0 +1,16 @@
+name: PR Assistant
+on:
+  pull_request:
+    types: [edited]
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  pr_assistant:
+    name: PR Assistant
+    runs-on: 'ubuntu-latest'
+
+    steps:
+      - uses: taskade/pr-assistant-action@main
+        with:
+          min-approval-count: 2
