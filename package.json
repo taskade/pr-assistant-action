@@ -4,6 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
+    "@actions/github": "^5.0.0",
     "typescript": "^4.3.5"
   },
   "devDependencies": {
