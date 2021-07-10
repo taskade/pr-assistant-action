@@ -30,7 +30,7 @@ async function verifyApprovals() {
 
   const reviews = reviewsResponse.data;
   const approvalCount = reviews.filter(
-    (review) => review.state === 'approved'
+    (review) => review.state === 'APPROVED'
   ).length;
 
   let body = `@${prAuthor} ${minApprovalCount} approvals reached! 🚀🚀🚀🚀🚀`;
