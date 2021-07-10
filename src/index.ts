@@ -3,7 +3,7 @@ import * as github from '@actions/github';
 import conventionalCommitsParser, { Commit } from 'conventional-commits-parser';
 
 async function verifyApprovals() {
-  const minApprovalCountStr = core.getInput('min-approval-count');
+  const minApprovalCountStr = core.getInput('min_approvals_count');
   const minApprovalCount = parseInt(minApprovalCountStr, 10);
 
   const token = core.getInput('github_token');
