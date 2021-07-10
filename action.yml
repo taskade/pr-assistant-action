@@ -1,10 +1,14 @@
 name: 'Taskade PR Assistant'
 description: 'Assist with PRs'
 inputs:
-  min_reviewer_count:
-    description: 'Number of reviewers before approval'
+  min_approvals_count:
+    description: 'Number of approvals required'
     required: true
     default: '1'
+  github_token:
+    description: 'GitHub token'
+    required: true
+    default: ${{ github.token }}
 runs:
   using: 'node12'
   main: 'lib/index.js'
