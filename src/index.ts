@@ -62,7 +62,7 @@ async function verifyPRTitle() {
   const parsedTitle: Commit = await new Promise((resolve, reject) => {
     parser.on('data', resolve);
     parser.on('error', reject);
-    parser.pipe(prTitle);
+    parser.write(prTitle);
   });
 
   const hasType = parsedTitle.type != null;
