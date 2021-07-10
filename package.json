@@ -24,6 +24,7 @@
   },
   "scripts": {
     "start": "ts-node index.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "package": "ncc build -o lib"
   }
 }
