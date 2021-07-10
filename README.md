@@ -6,3 +6,6 @@ This is a GitHub Action that helps out with PRs.
 - Approval count verification
 
 See (this workflow)[examples/workflow.yml] for an example.
+
+### Publishing
+Run `yarn build && yarn package` to update `lib/index.js`.
