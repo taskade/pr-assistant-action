@@ -1,0 +1,10 @@
+name: 'Taskade PR Assistant'
+description: 'Assist with PRs'
+inputs:
+  min_reviewer_count:
+    description: 'Number of reviewers before approval'
+    required: true
+    default: '1'
+runs:
+  using: 'node12'
+  main: 'lib/index.js'

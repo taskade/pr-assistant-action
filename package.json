@@ -19,6 +19,6 @@
   },
   "scripts": {
     "start": "ts-node index.ts",
-    "build": "tsc --outDir dist index.ts"
+    "build": "tsc --outDir lib"
   }
 }
