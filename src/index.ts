@@ -18,6 +18,8 @@ async function verifyApprovals() {
     );
   }
 
+  const prAuthor = github.context.payload.pull_request?.user?.login ?? '';
+
   const { owner, repo } = github.context.repo;
 
   const reviewsResponse = await octokit.rest.pulls.listReviews({
@@ -31,7 +33,7 @@ async function verifyApprovals() {
     (review) => review.state === 'approved'
   ).length;
 
-  let body = `${minApprovalCount} approvals reached! 🚀🚀🚀🚀🚀`;
+  let body = `@${prAuthor} ${minApprovalCount} approvals reached! 🚀🚀🚀🚀🚀`;
 
   if (approvalCount < minApprovalCount) {
     body = `${approvalCount}/${minApprovalCount} approvals to merge`;
