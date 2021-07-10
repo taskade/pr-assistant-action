@@ -23,6 +23,6 @@
   },
   "scripts": {
     "start": "ts-node index.ts",
-    "build": "tsc --outDir lib"
+    "build": "tsc"
   }
 }
