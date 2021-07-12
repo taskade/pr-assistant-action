@@ -103,6 +103,9 @@ async function verifyPRTitle() {
 
   const hasType = parsedTitle.type != null;
   const hasReferences = parsedTitle.references.length > 0;
+  const isCapitalised =
+    parsedTitle.subject?.slice?.(0, 1) ===
+    parsedTitle.subject?.slice?.(0, 1)?.toUpperCase?.();
 
   const { owner, repo } = github.context.repo;
   const token = core.getInput('github_token');
@@ -121,6 +124,10 @@ async function verifyPRTitle() {
 
     if (!hasReferences) {
       body += '- Reference to issue required (e.g. `feat: add chat (#99)`)\n';
+    }
+
+    if (!isCapitalised) {
+      body += '- PR Title should begin with a capital letter\n';
     }
 
     body +=
