@@ -36,6 +36,7 @@ async function verifyApprovals() {
   ).length;
 
   console.log('approvalCount=', approvalCount);
+  console.log('reviewCount=', reviews.length);
 
   let body = `${approvalCount}/${minApprovalCount} approvals to merge`;
 
