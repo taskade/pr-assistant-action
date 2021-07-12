@@ -33,10 +33,10 @@ async function verifyApprovals() {
     (review) => review.state === 'APPROVED'
   ).length;
 
-  let body = `@${prAuthor} ${minApprovalCount} approvals reached! 🚀🚀🚀🚀🚀`;
+  let body = `${approvalCount}/${minApprovalCount} approvals to merge`;
 
-  if (approvalCount < minApprovalCount) {
-    body = `${approvalCount}/${minApprovalCount} approvals to merge`;
+  if (approvalCount >= minApprovalCount) {
+    body = `@${prAuthor} ${minApprovalCount} approvals reached! 🚀🚀🚀🚀🚀`;
   }
 
   await octokit.rest.issues.createComment({
