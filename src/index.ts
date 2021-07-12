@@ -6,6 +6,8 @@ async function verifyApprovals() {
   const minApprovalCountStr = core.getInput('min_approvals_count');
   const minApprovalCount = parseInt(minApprovalCountStr, 10);
 
+  console.log('minApprovalCount=', minApprovalCount);
+
   const token = core.getInput('github_token');
 
   const octokit = github.getOctokit(token);
@@ -32,6 +34,8 @@ async function verifyApprovals() {
   const approvalCount = reviews.filter(
     (review) => review.state === 'APPROVED'
   ).length;
+
+  console.log('approvalCount=', approvalCount);
 
   let body = `${approvalCount}/${minApprovalCount} approvals to merge`;
 
