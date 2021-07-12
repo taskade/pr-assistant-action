@@ -31,7 +31,38 @@ async function verifyApprovals() {
   });
 
   const reviews = reviewsResponse.data;
-  const approvalCount = reviews.filter(
+  const reviewMap = new Map<number, typeof reviews[0]>();
+
+  for (const review of reviews) {
+    const userId = review.user?.id;
+
+    if (userId == null) {
+      continue;
+    }
+
+    const prevReview = reviewMap.get(userId);
+
+    if (
+      prevReview != null &&
+      review.submitted_at != null &&
+      prevReview.submitted_at != null
+    ) {
+      const reviewDate = new Date(review.submitted_at);
+      const prevReviewDate = new Date(prevReview.submitted_at);
+
+      if (reviewDate.valueOf() > prevReviewDate.valueOf()) {
+        reviewMap.set(userId, review);
+      }
+    } else {
+      reviewMap.set(userId, review);
+    }
+  }
+
+  for (const review of reviewMap.values()) {
+    console.log(`Latest review from ${review.user?.login} = ${review.state}`);
+  }
+
+  const approvalCount = [...reviewMap.values()].filter(
     (review) => review.state === 'APPROVED'
   ).length;
 
