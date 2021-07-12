@@ -84,7 +84,7 @@ async function verifyPRTitle() {
     }
 
     if (!hasReferences) {
-      body += '- Reference to issue required (e.g. #99)\n';
+      body += '- Reference to issue required (e.g. `feat: add chat (#99)`)\n';
     }
 
     body +=
