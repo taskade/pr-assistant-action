@@ -106,6 +106,7 @@ async function verifyPRTitle() {
   const isCapitalised =
     parsedTitle.subject?.slice?.(0, 1) ===
     parsedTitle.subject?.slice?.(0, 1)?.toUpperCase?.();
+  const isEndsWithPeriod = parsedTitle.subject?.slice(-1) === '.';
 
   const { owner, repo } = github.context.repo;
   const token = core.getInput('github_token');
@@ -128,6 +129,10 @@ async function verifyPRTitle() {
 
     if (!isCapitalised) {
       body += '- PR Title should begin with a capital letter\n';
+    }
+
+    if (isEndsWithPeriod) {
+      body += '- PR Title should not end with period\n';
     }
 
     body +=
