@@ -114,7 +114,7 @@ async function verifyPRTitle() {
 
   let body = '';
 
-  if (hasType && hasReferences) {
+  if (hasType && hasReferences && isCapitalised && !isEndsWithPeriod) {
     body = 'Excellent PR title! 👍';
   } else {
     body = 'The title of this PR can be improved:\n\n';
