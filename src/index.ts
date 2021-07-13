@@ -10,9 +10,9 @@ async function verifyApprovals() {
 
   if (
     github.context.payload.review != null &&
-    github.context.payload.review.state === 'COMMENTED'
+    github.context.payload.review.state === 'commented'
   ) {
-    console.log('Event was for a COMMENTED review, ignoring');
+    console.log('Event was for a commented review, ignoring');
     return;
   }
 
