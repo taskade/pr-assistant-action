@@ -8,6 +8,14 @@ async function verifyApprovals() {
 
   console.log('minApprovalCount=', minApprovalCount);
 
+  if (
+    github.context.payload.review != null &&
+    github.context.payload.review.state === 'COMMENTED'
+  ) {
+    console.log('Event was for a COMMENTED review, ignoring');
+    return;
+  }
+
   const token = core.getInput('github_token');
 
   const octokit = github.getOctokit(token);
