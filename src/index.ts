@@ -94,6 +94,11 @@ async function verifyPRTitle() {
     );
   }
 
+  if (github.context.payload.pull_request?.['changes[title][from]'] == null) {
+    console.log('No changes in title, aborting');
+    return;
+  }
+
   const parser = conventionalCommitsParser();
   const parsedTitle: Commit = await new Promise((resolve, reject) => {
     parser.on('data', resolve);
