@@ -102,7 +102,10 @@ async function verifyPRTitle() {
     );
   }
 
-  if (github.context.payload.pull_request?.['changes[title][from]'] == null) {
+  if (
+    github.context.action === 'edited' &&
+    github.context.payload.pull_request?.['changes[title][from]'] == null
+  ) {
     console.log('No changes in title, aborting');
     return;
   }
