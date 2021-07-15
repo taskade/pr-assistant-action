@@ -6,7 +6,7 @@ import verifyPRTitle from './verifyPRTitle';
 
 async function run() {
   console.log('Processing event', github.context.eventName);
-  console.log('Processing action', github.context.action);
+  console.log('Processing action', github.context.payload.action);
 
   switch (github.context.eventName) {
     case 'pull_request': {

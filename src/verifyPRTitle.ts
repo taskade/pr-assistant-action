@@ -14,8 +14,8 @@ export default async function verifyPRTitle(): Promise<void> {
   }
 
   if (
-    github.context.action === 'edited' &&
-    github.context.payload.pull_request?.['changes[title][from]'] === prTitle
+    github.context.payload.action === 'edited' &&
+    github.context.payload['changes[title][from]'] === prTitle
   ) {
     console.log('No changes in title, aborting');
     return;
