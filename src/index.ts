@@ -5,6 +5,9 @@ import verifyApprovals from './verifyApprovals';
 import verifyPRTitle from './verifyPRTitle';
 
 async function run() {
+  console.log('Processing event', github.context.eventName);
+  console.log('Processing action', github.context.action);
+
   switch (github.context.eventName) {
     case 'pull_request': {
       await verifyPRTitle();
