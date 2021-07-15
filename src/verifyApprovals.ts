@@ -43,25 +43,27 @@ export default async function verifyApprovals(): Promise<void> {
   for (const review of reviews) {
     const userId = review.user?.id;
 
+    console.log(
+      `Processing review from ${review.user?.login} at ${review.submitted_at}`
+    );
+
     if (userId == null) {
       continue;
     }
 
-    const prevReview = reviewMap.get(userId);
-
-    if (
-      prevReview != null &&
-      review.submitted_at != null &&
-      prevReview.submitted_at != null
-    ) {
-      const reviewDate = new Date(review.submitted_at);
-      const prevReviewDate = new Date(prevReview.submitted_at);
-
-      if (reviewDate.valueOf() > prevReviewDate.valueOf()) {
-        reviewMap.set(userId, review);
-      }
-    } else {
+    if (!reviewMap.has(userId)) {
       reviewMap.set(userId, review);
+    } else {
+      const prevReview = reviewMap.get(userId)!;
+
+      if (review.submitted_at != null && prevReview.submitted_at != null) {
+        const reviewDate = new Date(review.submitted_at);
+        const prevReviewDate = new Date(prevReview.submitted_at);
+
+        if (reviewDate.valueOf() > prevReviewDate.valueOf()) {
+          reviewMap.set(userId, review);
+        }
+      }
     }
   }
 
