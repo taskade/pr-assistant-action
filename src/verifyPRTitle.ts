@@ -49,7 +49,7 @@ async function validatePRTitle(title: string) {
     case 'feat':
     case 'fix': {
       info.push(
-        `As your PR is scoped to '${parsed.type}', it will be included in the changelog.`
+        `As your PR is typed as \`${parsed.type}\`, it will be included in the changelog.`
       );
 
       if (parsed.scope == null) {
