@@ -78,10 +78,19 @@ export default async function verifyApprovals(): Promise<void> {
   console.log('approvalCount=', approvalCount);
   console.log('reviewCount=', reviews.length);
 
-  let body = `${approvalCount}/${minApprovalCount} approvals to merge`;
+  let body = '';
 
   if (approvalCount >= minApprovalCount) {
-    body = `@${prAuthor} ${minApprovalCount} approvals reached! 🚀🚀🚀🚀🚀`;
+    body = `🚀🚀🚀🚀🚀 @${prAuthor} ${minApprovalCount} approvals reached!`;
+  } else {
+    body = `💁 ${approvalCount}/${minApprovalCount} approvals to merge\n\n`;
+
+    body += '| Reviewer | Status |\n';
+    body += '| -------- | ------ |\n';
+
+    for (const review of reviewMap.values()) {
+      body += `| ${review.user?.login} | ${review.state} |\n`;
+    }
   }
 
   await octokit.rest.issues.createComment({
