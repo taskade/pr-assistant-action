@@ -51,6 +51,12 @@ async function validatePRTitle(title: string) {
       info.push(
         `As your PR is scoped to '${parsed.type}', it will be included in the changelog.`
       );
+
+      if (parsed.scope == null) {
+        info.push(
+          'Consider adding a scope to the PR title (e.g. `feat(chat): Add formatting (#99)`)'
+        );
+      }
       break;
     }
   }
