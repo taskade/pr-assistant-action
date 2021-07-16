@@ -2,7 +2,7 @@ import * as core from '@actions/core';
 import * as github from '@actions/github';
 import conventionalCommitsParser, { Commit } from 'conventional-commits-parser';
 
-async function validatePRTitle(title: string): Promise<string[]> {
+async function validatePRTitle(title: string) {
   const parser = conventionalCommitsParser();
 
   const parsed: Commit = await new Promise((resolve, reject) => {
@@ -11,6 +11,7 @@ async function validatePRTitle(title: string): Promise<string[]> {
     parser.write(title);
   });
 
+  const info: string[] = [];
   const errors: string[] = [];
 
   // Type
@@ -43,7 +44,18 @@ async function validatePRTitle(title: string): Promise<string[]> {
     }
   }
 
-  return errors;
+  // Changelog-worthy scope
+  switch (parsed.type) {
+    case 'feat':
+    case 'fix': {
+      info.push(
+        `As your PR is scoped to '${parsed.type}', it will be included in the changelog.`
+      );
+      break;
+    }
+  }
+
+  return { info, errors };
 }
 
 export default async function verifyPRTitle(): Promise<void> {
@@ -65,7 +77,7 @@ export default async function verifyPRTitle(): Promise<void> {
     return;
   }
 
-  const errors = await validatePRTitle(prTitle);
+  const { info, errors } = await validatePRTitle(prTitle);
 
   const { owner, repo } = github.context.repo;
   const token = core.getInput('github_token');
@@ -80,9 +92,20 @@ export default async function verifyPRTitle(): Promise<void> {
 
     for (const error of errors) {
       body += `- ${error}\n`;
-      body +=
-        '\n\n[Conventional Commits 1.0.0 Specification](https://www.conventionalcommits.org/en/v1.0.0/#summary)';
     }
+  }
+
+  if (info.length > 0) {
+    body += '💁 Additional information is available about your PR title:\n\n';
+
+    for (const text of info) {
+      body += `- ${text}\n`;
+    }
+  }
+
+  if (errors.length > 0 || info.length > 0) {
+    body +=
+      '\n\n[Conventional Commits 1.0.0 Specification](https://www.conventionalcommits.org/en/v1.0.0/#summary)';
   }
 
   await octokit.rest.issues.createComment({
