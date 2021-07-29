@@ -89,6 +89,10 @@ export default async function verifyApprovals(): Promise<void> {
     body += '| -------- | ------ |\n';
 
     for (const review of reviewMap.values()) {
+      if (review.state === 'COMMENTED') {
+        continue;
+      }
+
       body += `| ${review.user?.login} | ${review.state} |\n`;
     }
   }
