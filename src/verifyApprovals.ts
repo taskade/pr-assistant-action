@@ -35,6 +35,7 @@ export default async function verifyApprovals(): Promise<void> {
     owner,
     repo,
     pull_number: prNumber,
+    per_page: 100,
   });
 
   const reviews = reviewsResponse.data;
