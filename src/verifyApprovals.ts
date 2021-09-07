@@ -98,6 +98,26 @@ export default async function verifyApprovals(): Promise<void> {
     }
   }
 
+  // Clear obsolete comments
+  const comments = await octokit.rest.issues.listComments({
+    owner,
+    repo,
+    issue_number: prNumber,
+    per_page: 10, // This should run frequently enough that 10 should be sufficient
+  });
+
+  for (const comment of comments.data) {
+    if (comment.user?.login !== 'github-actions[bot]') {
+      continue;
+    }
+
+    await octokit.rest.issues.deleteComment({
+      owner,
+      repo,
+      comment_id: comment.id,
+    });
+  }
+
   await octokit.rest.issues.createComment({
     owner,
     repo,
