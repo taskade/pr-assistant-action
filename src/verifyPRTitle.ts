@@ -128,6 +128,8 @@ export default async function verifyPRTitle(): Promise<void> {
       continue;
     }
 
+    console.log('Deleting comment', comment.id, comment.body_text);
+
     await octokit.rest.issues.deleteComment({
       owner,
       repo,
