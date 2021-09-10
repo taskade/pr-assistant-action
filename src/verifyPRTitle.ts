@@ -75,8 +75,6 @@ export default async function verifyPRTitle(): Promise<void> {
     );
   }
 
-  console.log('payload', github.context.payload);
-
   if (
     github.context.payload.action === 'edited' &&
     !('title' in github.context.payload.changes)
