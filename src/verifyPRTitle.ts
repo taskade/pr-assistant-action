@@ -103,7 +103,7 @@ export default async function verifyPRTitle(): Promise<void> {
 
   if (info.length > 0) {
     body +=
-      '\n\n💁 Additional information is available about your PR title:\n\n';
+      '\n\n#### 💁 Additional information is available about your PR title:\n\n';
 
     for (const text of info) {
       body += `- ${text}\n`;
