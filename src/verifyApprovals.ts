@@ -33,6 +33,17 @@ export default async function verifyApprovals(): Promise<Result | null> {
 
   const { owner, repo } = github.context.repo;
 
+  const pullRequest = await octokit.rest.pulls.get({
+    owner,
+    repo,
+    pull_number: prNumber,
+  });
+
+  if (pullRequest.data.draft) {
+    console.log('Pull request is still a draft, ignoring');
+    return null;
+  }
+
   const reviewsResponse = await octokit.rest.pulls.listReviews({
     owner,
     repo,
