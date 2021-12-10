@@ -1,8 +1,17 @@
-import * as core from '@actions/core';
 import * as github from '@actions/github';
 import conventionalCommitsParser, { Commit } from 'conventional-commits-parser';
 
-async function validatePRTitle(title: string) {
+import { Result } from './types';
+
+enum TitleLabel {
+  TYPE_MISSING = 'pr/type-missing :question:',
+  ISSUE_REFERENCE_MISSING = 'pr/issue-ref-missing :hash:',
+  TITLE_NOT_CAPITALISED = 'pr/title-not-capitalised :a:',
+  TITLE_HAS_ENDING_PERIOD = 'pr/title-has-ending-period :black_circle:',
+  FEAT_FIX_NO_SCOPE = 'pr/feat-fix-no-scope :infinity:',
+}
+
+async function validatePRTitle(title: string): Promise<Result> {
   const parser = conventionalCommitsParser();
 
   const parsed: Commit = await new Promise((resolve, reject) => {
@@ -11,17 +20,23 @@ async function validatePRTitle(title: string) {
     parser.write(title);
   });
 
-  const info: string[] = [];
-  const errors: string[] = [];
+  const result: Result = {
+    labelsToAdd: [],
+    labelsToRemove: [],
+  };
 
   // Type
   if (parsed.type == null) {
-    errors.push('Type required (feat, fix, chore, etc.)');
+    result.labelsToAdd.push(TitleLabel.TYPE_MISSING);
+  } else {
+    result.labelsToRemove.push(TitleLabel.TYPE_MISSING);
   }
 
   // References
   if (parsed.references.length === 0) {
-    errors.push('Reference to issue required (e.g. `feat: Add chat (#99)`)');
+    result.labelsToAdd.push(TitleLabel.ISSUE_REFERENCE_MISSING);
+  } else {
+    result.labelsToRemove.push(TitleLabel.ISSUE_REFERENCE_MISSING);
   }
 
   // Subject
@@ -30,17 +45,17 @@ async function validatePRTitle(title: string) {
     const firstChar = parsed.subject.slice(0, 1);
 
     if (firstChar !== firstChar.toUpperCase()) {
-      errors.push(
-        'PR title should begin with a capital letter (e.g. `feat: Add chat (#99)` instead of `feat: add chat (#99)`)'
-      );
+      result.labelsToAdd.push(TitleLabel.TITLE_NOT_CAPITALISED);
+    } else {
+      result.labelsToRemove.push(TitleLabel.TITLE_NOT_CAPITALISED);
     }
 
     // Don't end with period
     const lastChar = parsed.subject.slice(-1);
     if (lastChar === '.') {
-      errors.push(
-        'PR title should not end with period. (e.g. `feat: Add chat (#99)` instead of `feat: Add chat. (#99)`)'
-      );
+      result.labelsToAdd.push(TitleLabel.TITLE_HAS_ENDING_PERIOD);
+    } else {
+      result.labelsToRemove.push(TitleLabel.TITLE_HAS_ENDING_PERIOD);
     }
   }
 
@@ -48,99 +63,28 @@ async function validatePRTitle(title: string) {
   switch (parsed.type) {
     case 'feat':
     case 'fix': {
-      info.push(
-        `As your PR is typed as \`${parsed.type}\`, it will be included in the changelog.`
-      );
-
       if (parsed.scope == null) {
-        info.push(
-          'Consider adding a scope to the PR title (e.g. `feat(chat): Add formatting (#99)`)'
-        );
+        result.labelsToAdd.push(TitleLabel.FEAT_FIX_NO_SCOPE);
+      } else {
+        result.labelsToRemove.push(TitleLabel.FEAT_FIX_NO_SCOPE);
       }
       break;
     }
   }
 
-  return { info, errors };
+  return result;
 }
 
-export default async function verifyPRTitle(): Promise<void> {
+export default async function verifyPRTitle(): Promise<Result | null> {
   const prTitle = github.context.payload.pull_request?.title;
-
-  const prNumber = github.context.payload.pull_request?.number;
-
-  if (prNumber == null) {
-    throw new Error(
-      'This action can only be triggered from events with pull_request in the payload'
-    );
-  }
 
   if (
     github.context.payload.action === 'edited' &&
     !('title' in github.context.payload.changes)
   ) {
     console.log('No changes in title, aborting');
-    return;
+    return null;
   }
 
-  const { info, errors } = await validatePRTitle(prTitle);
-
-  const { owner, repo } = github.context.repo;
-  const token = core.getInput('github_token');
-  const octokit = github.getOctokit(token);
-
-  let body = '';
-
-  if (errors.length === 0) {
-    body = '💯 Excellent PR title!';
-  } else {
-    body = '😞 The title of this PR can be improved:\n\n';
-
-    for (const error of errors) {
-      body += `- ${error}\n`;
-    }
-  }
-
-  if (info.length > 0) {
-    body +=
-      '\n\n#### 💁 Additional information is available about your PR title:\n\n';
-
-    for (const text of info) {
-      body += `- ${text}\n`;
-    }
-  }
-
-  if (errors.length > 0 || info.length > 0) {
-    body +=
-      '\n\n[Conventional Commits 1.0.0 Specification](https://www.conventionalcommits.org/en/v1.0.0/#summary)';
-  }
-
-  // Clear obsolete comments
-  const comments = await octokit.rest.issues.listComments({
-    owner,
-    repo,
-    issue_number: prNumber,
-    per_page: 10, // This should run frequently enough that 10 should be sufficient
-  });
-
-  for (const comment of comments.data) {
-    if (comment.user?.login !== 'github-actions[bot]') {
-      continue;
-    }
-
-    console.log('Deleting comment', comment.id, comment.body_text);
-
-    await octokit.rest.issues.deleteComment({
-      owner,
-      repo,
-      comment_id: comment.id,
-    });
-  }
-
-  await octokit.rest.issues.createComment({
-    owner,
-    repo,
-    issue_number: prNumber,
-    body,
-  });
+  return await validatePRTitle(prTitle);
 }

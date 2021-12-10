@@ -1,33 +1,35 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 
-export default async function verifyApprovals(): Promise<void> {
+import { Result } from './types';
+
+enum ApprovalLabel {
+  NEEDS_MORE_REVIEWERS = 'pr/needs-more-reviewers :octocat:',
+  SHIP_IT = 'pr/ship_it :shipit:',
+}
+
+export default async function verifyApprovals(): Promise<Result | null> {
   const minApprovalCountStr = core.getInput('min_approvals_count');
   const minApprovalCount = parseInt(minApprovalCountStr, 10);
 
-  console.log('minApprovalCount=', minApprovalCount);
+  const result: Result = {
+    labelsToAdd: [],
+    labelsToRemove: [],
+  };
 
   if (
     github.context.payload.review != null &&
     github.context.payload.review.state === 'commented'
   ) {
     console.log('Event was for a commented review, ignoring');
-    return;
+    return null;
   }
 
   const token = core.getInput('github_token');
 
   const octokit = github.getOctokit(token);
 
-  const prNumber = github.context.payload.pull_request?.number;
-
-  if (prNumber == null) {
-    throw new Error(
-      'This action can only be triggered from events with pull_request in the payload'
-    );
-  }
-
-  const prAuthor = github.context.payload.pull_request?.user?.login ?? '';
+  const prNumber = github.context.payload.pull_request!.number;
 
   const { owner, repo } = github.context.repo;
 
@@ -79,49 +81,13 @@ export default async function verifyApprovals(): Promise<void> {
   console.log('approvalCount=', approvalCount);
   console.log('reviewCount=', reviews.length);
 
-  let body = '';
-
   if (approvalCount >= minApprovalCount) {
-    body = `🚀🚀🚀🚀🚀 @${prAuthor} ${minApprovalCount} approvals reached!`;
+    result.labelsToAdd.push(ApprovalLabel.SHIP_IT);
+    result.labelsToRemove.push(ApprovalLabel.NEEDS_MORE_REVIEWERS);
   } else {
-    body = `💁 ${approvalCount}/${minApprovalCount} approvals to merge\n\n`;
-
-    body += '| Reviewer | Status |\n';
-    body += '| -------- | ------ |\n';
-
-    for (const review of reviewMap.values()) {
-      if (review.state === 'COMMENTED') {
-        continue;
-      }
-
-      body += `| ${review.user?.login} | ${review.state} |\n`;
-    }
+    result.labelsToAdd.push(ApprovalLabel.NEEDS_MORE_REVIEWERS);
+    result.labelsToRemove.push(ApprovalLabel.SHIP_IT);
   }
 
-  // Clear obsolete comments
-  const comments = await octokit.rest.issues.listComments({
-    owner,
-    repo,
-    issue_number: prNumber,
-    per_page: 10, // This should run frequently enough that 10 should be sufficient
-  });
-
-  for (const comment of comments.data) {
-    if (comment.user?.login !== 'github-actions[bot]') {
-      continue;
-    }
-
-    await octokit.rest.issues.deleteComment({
-      owner,
-      repo,
-      comment_id: comment.id,
-    });
-  }
-
-  await octokit.rest.issues.createComment({
-    owner,
-    repo,
-    issue_number: prNumber,
-    body,
-  });
+  return result;
 }
