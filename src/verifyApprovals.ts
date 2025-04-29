@@ -52,7 +52,7 @@ export default async function verifyApprovals(): Promise<Result | null> {
   });
 
   const reviews = reviewsResponse.data;
-  const reviewMap = new Map<number, typeof reviews[0]>();
+  const reviewMap = new Map<number, (typeof reviews)[0]>();
 
   for (const review of reviews) {
     const userId = review.user?.id;
